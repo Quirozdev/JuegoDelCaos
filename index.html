@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Juego del caos</title>
+        <link rel="stylesheet" href="./styles.css" />
+    </head>
+    <body onload="iniciar();">
+        <h1>Juego del caos</h1>
+        <canvas id="canvas"></canvas>
+        <button id="boton_detener" disabled="true">Detener simulación</button>
+        <button id="boton_limpiar">Limpiar simulación</button>
+        <form id="opciones">
+            <label for="intervaloDeTiempoAdibujar">Tiempo en ms para redibujar puntos</label>
+            <input type="number" name="intervaloDeTiempoAdibujar" id="intervaloDeTiempoAdibujar" value="50" min="10" required>
+            <label for="generarColoresAleatorios">¿Generar colores aleatorios?</label>
+            <input type="checkbox" name="generarColoresAleatorios" id="generarColoresAleatorios" checked>
+            <input type="submit" id="boton_empezar" value="Empezar simulación">
+        </form>
+        <script type="text/javascript" src="./createjs.min.js"></script>
+        <script>
+            // use esta libreria para dibujar en el canvas:
+            // https://createjs.com/
+
+            // obtengo al elemento canvas y le cambio su ancho y altura al tamanio de la ventana, esto hace
+            // que junto con las propiedades en css, sea responsivo en teoria
+            const canvas = document.getElementById("canvas");
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            const boton_empezar = document.getElementById("boton_empezar");
+            const boton_detener = document.getElementById("boton_detener");
+            const boton_limpiar = document.getElementById("boton_limpiar");
+            // declaro variables globales
+            // este va a ser el controlador del canvas por asi decirlo
+            let stage;
+            // estos van a ser los vertices, que serian 3 para el triangulo
+            let verticeA;
+            let verticeB;
+            let verticeC;
+            // este arreglo va a contener a los vertices anteriores
+            let arregloVertices = [];
+            // este es el punto inicial desde el que se van a empezar a generar las distancias entre este y los vertices
+            let puntoInicial;
+            // este va a ser el intervalo de tiempo que va a pasar entre cada dibujada de puntos
+            let intervalo;
+            // este va a ser un objeto que tenga los valores obtenidos del formulario
+            let opciones;
+
+            const formulario_opciones = document.getElementById("opciones");
+            // cuando se mande el formulario/ se presione el boton de empezar simulacion
+            formulario_opciones.addEventListener("submit", (e) => {
+                // para que no se recargue la pagina por defecto
+                e.preventDefault();
+                // obtengo los datos del formulario
+                const datos_formulario = new FormData(formulario_opciones);
+                // se los asigno al objeto opciones
+                opciones = {
+                    "tiempoIntervalo": Number(datos_formulario.get("intervaloDeTiempoAdibujar")),
+                    "generarColoresAleatorios": datos_formulario.get("generarColoresAleatorios")
+                };
+                // deshabilito al boton de empezar
+                boton_empezar.disabled = true;
+                // habilito el boton de detener
+                boton_detener.disabled = false;
+                // deshabilito el boton de limpiar
+                boton_limpiar.disabled = true;
+                // para cada uno de los vertices les quito todos sus event listeners.
+                // el unico que van a tener es el de permitir arrastrarlos, por lo que cuando empiece
+                // la simulacion, se les quita eso
+                for (let i = 0; i < arregloVertices.length; i++) {
+                    arregloVertices[i].removeAllEventListeners();
+                }
+
+                // como mas abajo muto a punto inicial, ya que lo voy convirtiendo en cada punto medio,
+                // como un objeto con llaves x, y, entonces aqui checo si tiene la propiedad name, que si la
+                // tiene el "punto inicial original"/punto inicial al crearse por primera vez, para quitarle
+                // todo los eventos, siendo el que interesa el de poder arrastrarlo, ya que una vez iniciada
+                // la simulacion, este ya no se tiene que poder mover
+                if (puntoInicial.hasOwnProperty("name")) {
+                    puntoInicial.removeAllEventListeners();
+                }
+                // llamo a la funcion de empezar la simulacion cada x segundos, aqui se van a ir pintando los puntos
+                // segun el tiempo que haya especificado el usuario.
+                // esto simula algo parecido a la recursividad
+                intervalo = setInterval(function() {
+                    empezarSimulacion()
+                }, opciones.tiempoIntervalo);
+            });
+
+            
+
+            boton_detener.addEventListener("click", () => {
+                // cuando se detiene la simulacion, se quita el intervalo, lo que deja de ejecutar la funcion de
+                // empezar simulacion
+                clearInterval(intervalo);
+                // se habilitan y deshabilitan los botones correspondientes
+                boton_empezar.disabled = false;
+                // se le cambia el texto al boton de empezar simulacion
+                boton_empezar.value = "Continuar Simulación";
+                boton_detener.disabled = true;
+                boton_limpiar.disabled = false;
+            });
+
+            boton_limpiar.addEventListener("click", () => {
+                // recargo la pagina como una forma no muy buena, intente resetear el canvas y el stage
+                // pero aunque todos los elementos se borraban, como que quedaban ahi invisibles y producioan bugs
+                document.location.reload();
+            });
+
+            
+            function iniciar() {
+                stage = new createjs.Stage("canvas");
+                // esto se supone que puede habilitar que los vertices se puedan arrastrar mediante touch, como en un celular
+	            createjs.Touch.enable(stage);
+                // al vertice a lo dibujo en la mitad del ancho un poco abajo del tope de altura y le pongo un radio de 15, porque
+                // en realidad es un circulo
+                verticeA = dibujarPunto(canvas.width / 2, 20, 15, "#fab312");
+                // le agrego el evento de arrastrar
+                agregarEventoArrastrar(verticeA);
+                // tambien al arreglo de vertices le voy agregando cada uno de los vertices
+                arregloVertices.push(verticeA);
+                // a los otros vertices los voy acomodando de tal forma que formen un triangulo equilatero
+                verticeB = dibujarPunto(20, canvas.height - 20, 15, "#fab312");
+                agregarEventoArrastrar(verticeB);
+                arregloVertices.push(verticeB);
+                verticeC = dibujarPunto(canvas.width - 20, canvas.height - 20, 15, "#fab312");
+                agregarEventoArrastrar(verticeC);
+                arregloVertices.push(verticeC);
+                // el punto inicial empieza en el medio por defecto
+                puntoInicial = dibujarPunto(canvas.width / 2, canvas.height / 2, 10, "#afb123");
+                agregarEventoArrastrar(puntoInicial);
+                // esto es para que se actualice todo y se dibuje correctamente
+                stage.update();
+            }
+
+            function dibujarPunto(x, y, radio, color) {
+                const punto = new createjs.Shape();
+                // dibuja al punto/circulo
+                punto.graphics.beginFill(color).drawCircle(0, 0, radio);
+                // le asigna las coordenadas correspondientes
+                punto.x = x;
+                punto.y = y;
+                punto.name = "circle";
+                // se le agrega al controlador del canvas
+                stage.addChild(punto);
+                // se actualiza para dibujarlo
+                stage.update();
+                // y lo regreso
+                return punto;
+            }
+
+            function eventoArrastrar(evento) {
+                // con estas lineas se puede simular el arrastrar un elemento
+                // esto lo vi en la siguiente guia https://superdevresources.com/draggable-shapes-canvas-createjs/
+                evento.target.x = evento.stageX;
+                evento.target.y = evento.stageY;
+                // tambien se tiene que actualizar el stage para que de el efecto de arrastrar
+                stage.update();
+            }
+
+            function agregarEventoArrastrar(punto) {
+                // a un punto dado le agrega el evento de arrastrar
+                punto.on("pressmove", eventoArrastrar);
+            }
+
+            function obtenerPuntoMedio(x1, y1, x2, y2, longitud) {
+                // dados 2 puntos, se obtiene un punto medio entre ellos, donde la longitud determina
+                // la distancia entre ellos, por ejemplo si se le pone 2 a la longitud, 
+                // entonces si es exactamente el punto medio entre ambos
+                const puntoMedio = {
+                    'x': ((x1 + x2) / longitud),
+                    'y': ((y1 + y2) / longitud)
+                }
+                return puntoMedio;
+            }
+
+            function generarColorAleatorio() {
+                // genera un color aleatorio en formato rgb
+                const rojo = Math.floor(Math.random() * 256);
+                const azul = Math.floor(Math.random() * 256);
+                const verde = Math.floor(Math.random() * 256);
+                return `rgb(${rojo}, ${azul}, ${verde})`;
+            }
+
+            function empezarSimulacion() {
+                // simulo al vertice aleatorio al que se va a dibujar desde el punto inicial, aqui obtengo su indice
+                // dentro del arreglo de vertices
+                let verticeElegido = Math.floor(Math.random() * arregloVertices.length);
+                // obtengo al punto medio que esta entre el punto inicial y el vertice aleatorio obtenido
+                // de longitud le pongo 2 para que sea su punto medio exacto
+                let puntoMedio = obtenerPuntoMedio(puntoInicial.x, puntoInicial.y, arregloVertices[verticeElegido].x, arregloVertices[verticeElegido].y, 2);
+                // si el usuario selecciono que si se generaran colores aleatorios
+                if (opciones.generarColoresAleatorios === "on") {
+                    dibujarPunto(puntoMedio.x, puntoMedio.y, 5, generarColorAleatorio());
+                } else {
+                    dibujarPunto(puntoMedio.x, puntoMedio.y, 5, "black");
+                }
+                // el punto inicial pasa a ser el punto medio, mutandolo
+                puntoInicial = puntoMedio;
+            }
+        </script>
+    </body>
+</html>
