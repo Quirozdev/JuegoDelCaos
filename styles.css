@@ -80,8 +80,11 @@ input[type="number"] {
 }
 
 .boton-personalizado:hover {
-    background-color: cadetblue !important;
     border: 3px solid white;
+}
+
+.boton-personalizado[disabled] {
+    display: none;
 }
 
 #contenedor_botones {
