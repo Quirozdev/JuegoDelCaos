@@ -4,12 +4,109 @@
     box-sizing: border-box;
 }
 
+html {
+    font-family: 'Poppins', sans-serif;
+}
+
 body {
+    background-color: rgb(35,43,43);
+    color: #F8D800;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    margin: 20px 0;
+    align-items: center;
+}
+
+h1 {
+    text-align: center;
+    color: #28C76F;
+    animation: cambiarColor infinite ease-in-out 3s;
+}
+
+#opciones {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+    border-bottom: 3px solid #F8D800;
+    padding: 20px;
+    margin: 20px;
+}
+
+#contenedor_opciones {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 24px;
+}
+
+.contenedor_label_input {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+input[type="number"] {
+    padding: 6px;
+    border: 3px solid black;
+    border-radius: 12px;
+    background-color: rgb(14,17,17);
+    color: white;
+    font-size: 18px;
+}
+
+.boton-personalizado {
+    padding: 10px;
+    border: 3px solid black;
+    border-radius: 6px;
+    color: rgb(14,17,17);
+    font-size: 16px;
+    font-weight: bold;
+}
+
+#boton_empezar {
+    background-color: #28C76F;
+}
+
+#boton_detener {
+    background-color: #FFDF00;
+}
+
+#boton_limpiar {
+    background-color: #B22222;
+}
+
+.boton-personalizado:hover {
+    background-color: cadetblue !important;
+    border: 3px solid white;
+}
+
+#contenedor_botones {
     width: 100%;
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 15px;
 }
 
 #canvas {
     border: 1px solid black;
-    width: 75%;
-    height: 85%;
+    width: 95%;
+}
+
+
+@keyframes cambiarColor {
+    0% {
+        color: #28C76F;
+    }
+
+    50% {
+        color: #0396FF;
+    }
+
+    100% {
+        color: #28C76F;
+    }
 }

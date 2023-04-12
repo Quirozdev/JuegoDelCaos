@@ -5,19 +5,36 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Juego del caos</title>
         <link rel="stylesheet" href="./styles.css" />
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
     </head>
     <body onload="iniciar();">
         <h1>Juego del caos</h1>
-        <canvas id="canvas"></canvas>
-        <button id="boton_detener" disabled="true">Detener simulación</button>
-        <button id="boton_limpiar">Limpiar simulación</button>
-        <form id="opciones">
-            <label for="intervaloDeTiempoAdibujar">Tiempo en ms para redibujar puntos</label>
-            <input type="number" name="intervaloDeTiempoAdibujar" id="intervaloDeTiempoAdibujar" value="50" min="10" required>
-            <label for="generarColoresAleatorios">¿Generar colores aleatorios?</label>
-            <input type="checkbox" name="generarColoresAleatorios" id="generarColoresAleatorios" checked>
-            <input type="submit" id="boton_empezar" value="Empezar simulación">
-        </form>
+        <main>
+            <form id="opciones">
+                <div id="contenedor_opciones">
+                    <div class="contenedor_label_input">
+                        <label for="intervaloDeTiempoAdibujar">Tiempo en ms para redibujar puntos</label>
+                        <input type="number" name="intervaloDeTiempoAdibujar" id="intervaloDeTiempoAdibujar" value="50" min="10" required>
+                    </div>
+                    <div class="contenedor_label_input">
+                        <label for="colorElegido">Color de los puntos a dibujar</label>
+                        <input type="color" name="colorElegido" id="colorElegido" value="#000000" />
+                    </div>
+                    <div class="contenedor_label_input">
+                        <label for="generarColoresAleatorios">¿Generar colores aleatorios?</label>
+                        <input type="checkbox" name="generarColoresAleatorios" id="generarColoresAleatorios">
+                    </div>
+                </div>
+                <input type="submit" id="boton_empezar" class="boton-personalizado" value="Empezar simulación">
+            </form>
+            <div id="contenedor_botones">
+                <button id="boton_detener" class="boton-personalizado" disabled="true">Detener simulación</button>
+                <button id="boton_limpiar" class="boton-personalizado">Limpiar simulación</button>
+            </div>
+            <canvas id="canvas"></canvas>
+        </main>
         <script type="text/javascript" src="./createjs.min.js"></script>
         <script>
             // use esta libreria para dibujar en el canvas:
@@ -57,6 +74,7 @@
                 // se los asigno al objeto opciones
                 opciones = {
                     "tiempoIntervalo": Number(datos_formulario.get("intervaloDeTiempoAdibujar")),
+                    "colorElegido": datos_formulario.get("colorElegido"),
                     "generarColoresAleatorios": datos_formulario.get("generarColoresAleatorios")
                 };
                 // deshabilito al boton de empezar
@@ -87,6 +105,17 @@
                     empezarSimulacion()
                 }, opciones.tiempoIntervalo);
             });
+
+            const coloresAleatoriosCheckBox = document.getElementById("generarColoresAleatorios");
+            const colorElegido = document.getElementById("colorElegido");
+            // para deshabilitar al input donde se selecciona el color, cuando se selecciona la opcion de generar colores aleatorios
+            coloresAleatoriosCheckBox.addEventListener("change", () => {
+                if (coloresAleatoriosCheckBox.checked) {
+                    colorElegido.disabled = true;
+                } else {
+                    colorElegido.disabled = false;
+                }
+            })
 
             
 
@@ -194,7 +223,7 @@
                 if (opciones.generarColoresAleatorios === "on") {
                     dibujarPunto(puntoMedio.x, puntoMedio.y, 5, generarColorAleatorio());
                 } else {
-                    dibujarPunto(puntoMedio.x, puntoMedio.y, 5, "black");
+                    dibujarPunto(puntoMedio.x, puntoMedio.y, 5, colorElegido.value);
                 }
                 // el punto inicial pasa a ser el punto medio, mutandolo
                 puntoInicial = puntoMedio;
