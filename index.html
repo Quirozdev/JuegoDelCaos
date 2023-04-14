@@ -30,7 +30,7 @@
                 <input type="submit" id="boton_empezar" class="boton-personalizado" value="Empezar simulación">
             </form>
             <div id="contenedor_botones">
-                <button id="boton_detener" class="boton-personalizado" disabled="true">Detener simulación</button>
+                <button id="boton_detener" class="boton-personalizado" disabled="true">Pausar simulación</button>
                 <button id="boton_limpiar" class="boton-personalizado">Limpiar simulación</button>
             </div>
             <canvas id="canvas"></canvas>
@@ -90,15 +90,6 @@
                 // la simulacion, se les quita eso
                 for (let i = 0; i < arregloVertices.length; i++) {
                     arregloVertices[i].removeAllEventListeners();
-                }
-
-                // como mas abajo muto a punto inicial, ya que lo voy convirtiendo en cada punto medio,
-                // como un objeto con llaves x, y, entonces aqui checo si tiene la propiedad name, que si la
-                // tiene el "punto inicial original"/punto inicial al crearse por primera vez, para quitarle
-                // todo los eventos, siendo el que interesa el de poder arrastrarlo, ya que una vez iniciada
-                // la simulacion, este ya no se tiene que poder mover
-                if (puntoInicial.hasOwnProperty("name")) {
-                    puntoInicial.removeAllEventListeners();
                 }
                 // llamo a la funcion de empezar la simulacion cada x segundos, aqui se van a ir pintando los puntos
                 // segun el tiempo que haya especificado el usuario.
@@ -160,7 +151,6 @@
                 arregloVertices.push(verticeC);
                 // el punto inicial empieza en el medio por defecto
                 puntoInicial = dibujarPunto(canvas.width / 2, canvas.height / 2, 10, "#afb123");
-                agregarEventoArrastrar(puntoInicial);
                 // esto es para que se actualice todo y se dibuje correctamente
                 stage.update();
             }
