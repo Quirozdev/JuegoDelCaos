@@ -33,6 +33,7 @@
                 <button id="boton_detener" class="boton-personalizado" disabled="true">Pausar simulación</button>
                 <button id="boton_limpiar" class="boton-personalizado">Limpiar simulación</button>
             </div>
+            <p id="parrafo_instruccion_movimiento">Puedes mover los vértices!</p>
             <canvas id="canvas"></canvas>
         </main>
         <script type="text/javascript" src="./createjs.min.js"></script>
@@ -48,6 +49,7 @@
             const boton_empezar = document.getElementById("boton_empezar");
             const boton_detener = document.getElementById("boton_detener");
             const boton_limpiar = document.getElementById("boton_limpiar");
+            const parrafo_instruccion_movimiento = document.getElementById("parrafo_instruccion_movimiento")
             // declaro variables globales
             // este va a ser el controlador del canvas por asi decirlo
             let stage;
@@ -69,6 +71,8 @@
             formulario_opciones.addEventListener("submit", (e) => {
                 // para que no se recargue la pagina por defecto
                 e.preventDefault();
+                // para ocultar este parrafo de instruccion basico una vez iniciada la simulacion
+                parrafo_instruccion_movimiento.style.display = 'none';
                 // obtengo los datos del formulario
                 const datos_formulario = new FormData(formulario_opciones);
                 // se los asigno al objeto opciones
